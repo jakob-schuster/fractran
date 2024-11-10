@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
-use crate::core;
+use crate::core::{self, step, to_names, Frac};
 
 pub type Name = String;
 
@@ -25,7 +25,31 @@ impl Prog {
 
         let result = prog.eval();
 
-        from_prime_product(result, &names)
+        to_names(result, &names)
+    }
+
+    pub fn step_eval(&self) -> Vec<Name> {
+        let names = Self::get_names(&self.rules);
+
+        let mut acc = to_prime_product(&self.state, &names);
+        let fracs = self.rules.iter()
+            .map(|rule| rule.to_frac(&names)).collect::<Vec<_>>();
+
+        while let (new_acc, Some(frac)) = step(acc, &fracs) {
+            let state = to_names(new_acc, &names);
+            let rule = frac.to_rule(&names);
+
+            println!(
+                "{} [{}] * {} [{}] => {} [{}]",
+                acc, to_succinct_names(&to_names(acc, &names)).join(" "),
+                frac, frac.to_rule(&names),
+                new_acc, to_succinct_names(&to_names(new_acc, &names)).join(" ")
+            );
+
+            acc = new_acc;
+        }
+
+        to_names(acc, &names)
     }
 
     fn get_names(rules: &[Rule]) -> Vec<Name> {
@@ -86,6 +110,16 @@ impl Rule {
     }
 }
 
+impl Display for Rule {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        format!(
+            "{} -> {}", 
+            to_succinct_names(&self.left).join(" "), 
+            to_succinct_names(&self.right).join(" ")
+        ).fmt(f)
+    }
+}
+
 fn to_prime_product(vec: &[Name], names: &[Name]) -> i128 {
     let primes = vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37];
         
@@ -99,23 +133,19 @@ fn to_prime_product(vec: &[Name], names: &[Name]) -> i128 {
         .fold(1, |acc, prime| acc * prime)
 }
 
-fn from_prime_product(prime_product: i128, names: &[Name]) -> Vec<Name> {
-    let primes = vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37];
+fn to_succinct_names(names: &[Name]) -> Vec<String> {
+    let mut map = HashMap::new();
+    for name in names {
+        let num: usize = match map.get(name) {
+            Some(i) => *i + 1,
+            None => 1,
+        };
 
-    let mut new_prime_product = prime_product;
-    let mut new_names = vec![];
-    let mut i = primes.iter().zip(names);
-    
-    let mut a = i.next();
-    while let Some((prime, name)) = a {
-        if new_prime_product % prime == 0 {
-            new_prime_product = new_prime_product / prime;
-            new_names.push(name.clone());
-        } else {
-            a = i.next();
-        }
+        map.insert(name, num);
     }
 
-    new_names
+    map.iter().map(|(a,b)| match b {
+        1 => a.to_string(),
+        _ => format!("{}^{}", a, b)
+    }).collect()
 }
-

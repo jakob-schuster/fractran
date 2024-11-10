@@ -10,5 +10,5 @@ fn main() {
 
     let a = parse::prog_parser::prog(&prog).unwrap();
 
-    println!("Result: {}", ast::Prog::print_names(&a.eval()));
+    println!("Result: {}", ast::Prog::print_names(&a.step_eval()));
 }

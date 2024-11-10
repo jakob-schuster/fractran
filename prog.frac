@@ -1,6 +1,5 @@
-:: axe > log coin
-:: stick^3 plank^3 > axe
-:: log > plank^4
+:: stick^2 plank^3 > pickaxe
 :: plank^2 > stick^4
+:: log > plank^4
 
-;; log log
+log^3
