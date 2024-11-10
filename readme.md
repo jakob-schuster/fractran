@@ -1,4 +1,4 @@
-# 🧮 fractran 🏺
+# 🧮 fractran🏺
 
 A little Rust implementation of Conway's Fractran, specifically [devine's version of it](https://wiki.xxiivv.com/site/fractran.html).
 
