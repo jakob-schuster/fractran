@@ -2,49 +2,9 @@ use std::fmt::{Display, Pointer};
 
 use crate::ast::{Name, Rule};
 
-#[derive(Debug)]
-pub struct Prog {
-    acc: i128,
-    fracs: Vec<Frac>,
-}
-
-impl Prog {
-    pub fn new(acc: i128, fracs: Vec<Frac>) -> Prog {
-        Prog { acc, fracs }
-    }
-
-    pub fn eval(&self) -> i128 {
-        let mut new_acc = self.acc;
-        let mut used = true;
-        while used {
-            used = false;
-            for frac in &self.fracs {
-                if new_acc % frac.den == 0 {
-                    new_acc = new_acc * frac.num / frac.den;
-                    used = true;
-                    break
-                }
-            }
-        }
-        new_acc
-    }
-
-    pub fn step(&self) -> (Prog, Option<Frac>) {
-        let mut new_acc = self.acc;
-        let mut applied_frac = None;
-
-        for frac in &self.fracs {
-            if new_acc % frac.den == 0 {
-                new_acc = new_acc * frac.num / frac.den;
-                applied_frac = Some(frac.clone());
-                break
-            }
-        }
-
-        (Prog::new(new_acc, self.fracs.clone()), applied_frac)
-    }
-}
-
+// Executes one step of the fractran program, 
+// returning a new accumulator (state) and the fraction that was applied.
+// If no fraction could be multiplied, the second result is None.
 pub fn step(acc: i128, fracs: &[Frac]) -> (i128, Option<&Frac>) {
     let mut new_acc = acc;
     let mut applied_frac = None;
@@ -67,10 +27,12 @@ pub struct Frac {
 }
 
 impl Frac {
+    // Creates a new fraction, with a numerator and a denominator.
     pub fn new(num: i128, den: i128) -> Frac {
         Frac { num, den }
     }
 
+    // Converts a fraction to a rule.
     pub fn to_rule(&self, names: &[Name]) -> Rule {
         Rule::new(
             to_names(self.den, names),
@@ -85,6 +47,8 @@ impl Display for Frac {
     }
 }
 
+// Converts a prime product to the list of names that it corresponds to,
+// according to the ordered list of names.
 pub fn to_names(prime_product: i128, names: &[Name]) -> Vec<Name> {
     let primes = vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37];
 

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-use crate::core::{self, step, to_names, Frac};
+use crate::core::{self, step, to_names};
 
 pub type Name = String;
 
@@ -10,48 +10,49 @@ pub struct Prog {
 }
 
 impl Prog {
+    // Creates a new program.
     pub fn new(state: Vec<Name>, rules: Vec<Rule>) -> Prog {
         Prog { state, rules }
     }
 
+    // Parses and fully evaluates a program, printing each intermediate state.
     pub fn eval(&self) -> Vec<Name> {
+        // get all the names
         let names = Self::get_names(&self.rules);
 
-        let acc = to_prime_product(&self.state, &names);
-        let fracs = self.rules.iter()
-            .map(|rule| rule.to_frac(&names)).collect();
-
-        let prog = core::Prog::new(acc, fracs);
-
-        let result = prog.eval();
-
-        to_names(result, &names)
-    }
-
-    pub fn step_eval(&self) -> Vec<Name> {
-        let names = Self::get_names(&self.rules);
-
+        // generate the "core" program: an accumulator (state) and fractions
         let mut acc = to_prime_product(&self.state, &names);
+        println!("{}\t\t||\t[{}]", 
+            acc, 
+            to_succinct_names(&to_names(acc, &names)).join(" ")
+        );
         let fracs = self.rules.iter()
             .map(|rule| rule.to_frac(&names)).collect::<Vec<_>>();
 
+        // iteratively calculate the next accumulator
         while let (new_acc, Some(frac)) = step(acc, &fracs) {
-            let state = to_names(new_acc, &names);
-            let rule = frac.to_rule(&names);
 
+            // print the debug information
             println!(
-                "{} [{}] * {} [{}] => {} [{}]",
-                acc, to_succinct_names(&to_names(acc, &names)).join(" "),
-                frac, frac.to_rule(&names),
-                new_acc, to_succinct_names(&to_names(new_acc, &names)).join(" ")
+                "{} * {}\t||\t[{}] * [{}]",
+                acc, frac, 
+                to_succinct_names(&to_names(acc, &names)).join(" "), 
+                frac.to_rule(&names),
             );
 
             acc = new_acc;
         }
 
+        // return the final accumulator
+        println!("{}\t\t||\t[{}]", 
+            acc, 
+            to_succinct_names(&to_names(acc, &names)).join(" ")
+        );
+
         to_names(acc, &names)
     }
 
+    // Gets the ordered set of names used in a list of rules, in order.
     fn get_names(rules: &[Rule]) -> Vec<Name> {
         let mut names = vec![];
 
@@ -65,27 +66,6 @@ impl Prog {
 
         names
     }
-
-    pub fn print_names(names: &[Name]) -> String {
-        let mut map = HashMap::new();
-        for name in names {
-            let val = map.get(name).unwrap_or(&0);
-            map.insert(name, val + 1);
-        }
-
-        let mut string = String::new();
-        for (name, val) in map {
-            let new_string = if val > 1 {
-                format!("{name}^{val} ") 
-            } else {
-                format!("{name} ")
-            };
-            
-            string.push_str(&new_string);
-        }
-
-        string
-    }
 }
 
 pub struct Rule {
@@ -94,14 +74,17 @@ pub struct Rule {
 }
 
 impl Rule {
+    // Creates a new rule.
     pub fn new(left: Vec<Name>, right: Vec<Name>) -> Rule {
         Rule { left, right }
     }
 
+    // Extracts the names from a rule.
     fn get_names(&self) -> Vec<Name> {
         self.left.iter().chain(self.right.iter()).cloned().collect()
     }
 
+    // Converts a rule to a fraction.
     fn to_frac(&self, names: &[Name]) -> core::Frac {
         core::Frac::new(
             to_prime_product(&self.right, names),
@@ -120,6 +103,7 @@ impl Display for Rule {
     }
 }
 
+// Converts a list of names to its prime product.
 fn to_prime_product(vec: &[Name], names: &[Name]) -> i128 {
     let primes = vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37];
         
@@ -133,7 +117,11 @@ fn to_prime_product(vec: &[Name], names: &[Name]) -> i128 {
         .fold(1, |acc, prime| acc * prime)
 }
 
-fn to_succinct_names(names: &[Name]) -> Vec<String> {
+// Converts a list of names, calculating when duplicates occur
+// to express them in sugared form.
+// "plank log log" => "plank log^2"
+// Still not canonical, since the map is not sorted.
+pub fn to_succinct_names(names: &[Name]) -> Vec<String> {
     let mut map = HashMap::new();
     for name in names {
         let num: usize = match map.get(name) {
