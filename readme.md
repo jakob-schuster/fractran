@@ -31,7 +31,9 @@ To write succintly, you can use the caret `^` to repeat a word a number of times
 
 ## Program state
 
-The program state is just a space-separated list of words.
+The program state is just a space-separated list of words. The program state must be the last line of the program.
 ```
+:: log > plank^4
+
 log plank^3
 ```
