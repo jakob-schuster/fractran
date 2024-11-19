@@ -1,7 +1,6 @@
 use std::fs::read_to_string;
 
-use ast::to_succinct_names;
-use clap::{Arg, Parser};
+use clap::Parser;
 
 pub mod ast;
 pub mod core;
