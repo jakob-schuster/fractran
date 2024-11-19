@@ -1,6 +1,9 @@
 use std::fmt::{Display, Pointer};
 
-use crate::ast::{Name, Rule};
+use crate::{
+    ast::{Name, Rule},
+    util,
+};
 
 // Executes one step of the fractran program,
 // returning a new accumulator (state) and the fraction that was applied.
@@ -47,7 +50,7 @@ impl Display for Frac {
 // Converts a prime product to the list of names that it corresponds to,
 // according to the ordered list of names.
 pub fn to_names(prime_product: i128, names: &[Name]) -> Vec<Name> {
-    let primes = vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37];
+    let primes = util::get_n_primes(names.len());
 
     let mut new_prime_product = prime_product;
     let mut new_names = vec![];

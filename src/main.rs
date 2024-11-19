@@ -6,6 +6,7 @@ use clap::{Arg, Parser};
 pub mod ast;
 pub mod core;
 pub mod parse;
+pub mod util;
 
 #[derive(Parser)]
 struct Args {

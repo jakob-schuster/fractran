@@ -1,6 +1,9 @@
 use std::{collections::HashMap, fmt::Display};
 
-use crate::core::{self, step, to_names};
+use crate::{
+    core::{self, step, to_names},
+    util::get_n_primes,
+};
 
 pub type Name = String;
 
@@ -111,7 +114,7 @@ impl Display for Rule {
 
 // Converts a list of names to its prime product.
 fn to_prime_product(vec: &[Name], names: &[Name]) -> i128 {
-    let primes = vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37];
+    let primes = get_n_primes(names.len());
 
     let get_prime = |name: &Name| -> i128 {
         let index = names.iter().position(|a| a.eq(name)).unwrap();
