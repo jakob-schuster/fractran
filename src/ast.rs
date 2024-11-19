@@ -22,21 +22,25 @@ impl Prog {
 
         // generate the "core" program: an accumulator (state) and fractions
         let mut acc = to_prime_product(&self.state, &names);
-        println!("{}\t\t||\t[{}]", 
-            acc, 
+        println!(
+            "{}\t\t||\t[{}]",
+            acc,
             to_succinct_names(&to_names(acc, &names)).join(" ")
         );
-        let fracs = self.rules.iter()
-            .map(|rule| rule.to_frac(&names)).collect::<Vec<_>>();
+        let fracs = self
+            .rules
+            .iter()
+            .map(|rule| rule.to_frac(&names))
+            .collect::<Vec<_>>();
 
         // iteratively calculate the next accumulator
         while let (new_acc, Some(frac)) = step(acc, &fracs) {
-
             // print the debug information
             println!(
                 "{} * {}\t||\t[{}] * [{}]",
-                acc, frac, 
-                to_succinct_names(&to_names(acc, &names)).join(" "), 
+                acc,
+                frac,
+                to_succinct_names(&to_names(acc, &names)).join(" "),
                 frac.to_rule(&names),
             );
 
@@ -44,8 +48,9 @@ impl Prog {
         }
 
         // return the final accumulator
-        println!("{}\t\t||\t[{}]", 
-            acc, 
+        println!(
+            "{}\t\t||\t[{}]",
+            acc,
             to_succinct_names(&to_names(acc, &names)).join(" ")
         );
 
@@ -96,25 +101,24 @@ impl Rule {
 impl Display for Rule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         format!(
-            "{} -> {}", 
-            to_succinct_names(&self.left).join(" "), 
+            "{} -> {}",
+            to_succinct_names(&self.left).join(" "),
             to_succinct_names(&self.right).join(" ")
-        ).fmt(f)
+        )
+        .fmt(f)
     }
 }
 
 // Converts a list of names to its prime product.
 fn to_prime_product(vec: &[Name], names: &[Name]) -> i128 {
     let primes = vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37];
-        
-    let get_prime = |name: &Name| -> i128 { 
+
+    let get_prime = |name: &Name| -> i128 {
         let index = names.iter().position(|a| a.eq(name)).unwrap();
         *primes.get(index).unwrap() as i128
     };
-    
-    vec.iter()
-        .map(get_prime)
-        .fold(1, |acc, prime| acc * prime)
+
+    vec.iter().map(get_prime).fold(1, |acc, prime| acc * prime)
 }
 
 // Converts a list of names, calculating when duplicates occur
@@ -132,8 +136,10 @@ pub fn to_succinct_names(names: &[Name]) -> Vec<String> {
         map.insert(name, num);
     }
 
-    map.iter().map(|(a,b)| match b {
-        1 => a.to_string(),
-        _ => format!("{}^{}", a, b)
-    }).collect()
+    map.iter()
+        .map(|(a, b)| match b {
+            1 => a.to_string(),
+            _ => format!("{}^{}", a, b),
+        })
+        .collect()
 }
