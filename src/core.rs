@@ -1,4 +1,4 @@
-use std::fmt::{Display, Pointer};
+use std::fmt::Display;
 
 use crate::{
     ast::{Name, Rule},
@@ -67,4 +67,67 @@ pub fn to_names(prime_product: i128, names: &[Name]) -> Vec<Name> {
     }
 
     new_names
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::core::to_names;
+
+    // Tests whether to_names works correctly, using one of devine's canonical examples.
+    // "ACC 21450 flour sugar apples apples oranges cherries"
+    #[test]
+    pub fn test_to_names() {
+        let prime_product = 21450;
+        let names = [
+            "flour",
+            "sugar",
+            "apples",
+            "apple-cake",
+            "oranges",
+            "cherries",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+
+        let result = ["flour", "sugar", "apples", "apples", "oranges", "cherries"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect::<Vec<_>>();
+
+        assert_eq!(to_names(prime_product, &names), result);
+    }
+
+    // Tests whether to_rules works correctly, using one of devine's canonical examples.
+    // ":: 7/30 flour.2 sugar.3 apples.5 > apple-cake.7"
+    #[test]
+    pub fn test_to_rule() {
+        let frac = super::Frac::new(7, 30);
+        let names = [
+            "flour",
+            "sugar",
+            "apples",
+            "apple-cake",
+            "oranges",
+            "cherries",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+
+        let left = ["flour", "sugar", "apples"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect::<Vec<_>>();
+
+        let right = ["apple-cake"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect::<Vec<_>>();
+
+        let rule = frac.to_rule(&names);
+
+        assert_eq!(rule.left, left);
+        assert_eq!(rule.right, right);
+    }
 }

@@ -77,8 +77,8 @@ impl Prog {
 }
 
 pub struct Rule {
-    left: Vec<Name>,
-    right: Vec<Name>,
+    pub left: Vec<Name>,
+    pub right: Vec<Name>,
 }
 
 impl Rule {
@@ -145,4 +145,61 @@ pub fn to_succinct_names(names: &[Name]) -> Vec<String> {
             _ => format!("{}^{}", a, b),
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    // Tests to_succinct_names using a simple example.
+    // "plank log log" => "plank log^2"
+    #[test]
+    fn test_to_succinct_names() {
+        let names = vec![
+            String::from("plank"),
+            String::from("log"),
+            String::from("log"),
+        ];
+        assert_eq!(
+            super::to_succinct_names(&names),
+            vec![String::from("plank"), String::from("log^2")]
+        );
+    }
+
+    // Tests to_prime_product using a simple example.
+    // "plank log log" in the context of "log plank stick pickaxe" => 7
+    #[test]
+    fn test_to_prime_product() {
+        let names = vec![
+            String::from("log"),
+            String::from("plank"),
+            String::from("stick"),
+            String::from("pickaxe"),
+        ];
+        let items = vec![
+            String::from("plank"),
+            String::from("log"),
+            String::from("log"),
+        ];
+        assert_eq!(super::to_prime_product(&items, &names), 12);
+    }
+
+    // Tests to_frac using a simple example.
+    // ":: 7/30 flour.2 sugar.3 apples.5 > apple-cake.7"
+    #[test]
+    fn test_to_frac() {
+        let names = vec![
+            String::from("flour"),
+            String::from("sugar"),
+            String::from("apples"),
+            String::from("apple-cake"),
+        ];
+        let rule = super::Rule::new(
+            vec![
+                String::from("flour"),
+                String::from("sugar"),
+                String::from("apples"),
+            ],
+            vec![String::from("apple-cake")],
+        );
+        assert_eq!(&format!("{}", rule.to_frac(&names)), "7/30");
+    }
 }
